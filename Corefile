@@ -2,6 +2,7 @@
     hosts /etc/coredns/hosts {
         reload 2s
         fallthrough
+        ttl 30
     }
     log
     errors
