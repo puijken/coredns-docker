@@ -3,7 +3,6 @@
         reload 2s
         fallthrough
     }
-    cache 30
     log
     errors
 }
