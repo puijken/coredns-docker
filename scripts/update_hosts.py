@@ -16,7 +16,8 @@ client = docker.from_env()
 # Generate hosts file
 # -------------------------
 def generate_hosts():
-    containers = client.containers.list()
+    # Include all containers, even stopped ones
+    containers = client.containers.list(all=True)
     lines = []
 
     for c in containers:
