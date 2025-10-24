@@ -1,0 +1,8 @@
+.:53 {
+    hosts /etc/coredns/hosts {
+        reload 2s
+        fallthrough
+    }
+    log
+    errors
+}

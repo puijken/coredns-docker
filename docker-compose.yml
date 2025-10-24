@@ -1,0 +1,18 @@
+services:
+  coredns-dynamic:
+    image: ghcr.io/puijken/coredns-docker:latest
+    container_name: coredns-dynamic
+    hostname: coredns
+    restart: always
+    environment:
+      - DOMAIN=docker.domain.com
+      - NETWORK_PREFIX=macvlan
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      macvlan12:
+        ipv4_address: 192.168.10.10
+
+networks:
+  macvlan12:
+    external: true
