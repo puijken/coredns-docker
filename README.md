@@ -10,6 +10,7 @@ It dynamically maps container hostnames and IP addresses into CoreDNS, supports 
 ✅ **Automatic DNS Record Management**  
 - Each Docker container gets a fully-qualified domain name (FQDN) automatically added to `/etc/coredns/hosts`.  
 - CoreDNS automatically provides **forward (A)** and **reverse (PTR)** resolution.
+- Will add 0.0.0.0 entry for containers that are stopped.
 
 ✅ **Event-Based Updates**  
 - The DNS host file updates **instantly** on Docker events (start, stop, destroy, etc.).  
