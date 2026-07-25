@@ -25,21 +25,14 @@ def generate_hosts():
         name = c.name
         networks = c.attrs["NetworkSettings"]["Networks"]
 
-        # Check if container contains one of the network interfaces we want
-        matched_network = False
+        # Only add an entry for networks matching one of the configured prefixes
         for net_name, net_info in networks.items():
             if not any(net_name.startswith(prefix.strip()) for prefix in NETWORK_PREFIXES):
                 continue
 
-            matched_network = True
             ip = net_info.get("IPAddress") or FALLBACK_IP
             fqdn = f"{name}.{DOMAIN}"
             lines.append(f"{ip}\t{fqdn} {name}")
-
-        # If container has no matching network, still add fallback
-        if not matched_network:
-            fqdn = f"{name}.{DOMAIN}"
-            lines.append(f"{FALLBACK_IP}\t{fqdn} {name}")
 
     # Write to hosts file
     with open(HOSTS_FILE, "w") as f:

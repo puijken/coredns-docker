@@ -8,9 +8,10 @@ It dynamically maps container hostnames and IP addresses into CoreDNS, supports 
 ## 🚀 Features
 
 ✅ **Automatic DNS Record Management**  
-- Each Docker container gets a fully-qualified domain name (FQDN) automatically added to `/etc/coredns/hosts`.  
+- Every container attached to a matched network (see `NETWORK_PREFIX` below) gets a fully-qualified domain name (FQDN) automatically added to `/etc/coredns/hosts`.  
 - CoreDNS automatically provides **forward (A)** and **reverse (PTR)** resolution.
-- Will add 0.0.0.0 entry for containers that are stopped.
+- A matched container that's currently stopped (no IP assigned yet) gets a `FALLBACK_IP` placeholder entry instead of being omitted.
+- Containers with **no** matched network get no entry at all — they don't resolve, rather than resolving to a placeholder.
 
 ✅ **Event-Based Updates**  
 - The DNS host file updates **instantly** on Docker events (start, stop, destroy, etc.).  
@@ -29,18 +30,18 @@ It dynamically maps container hostnames and IP addresses into CoreDNS, supports 
 - CoreDNS automatically provides reverse (PTR) lookups for all listed IPs.
 
 ✅ **No DNS forwarding**  
-- CoreDNS will not forward requests to upstream. Use this only for automatated Docker container resolving.
+- CoreDNS will not forward requests to upstream. Use this only for automated Docker container resolving.
 
 ---
 
 ## 🗂️ Project Structure
-docker-coredns-dynamic/
+coredns-docker/
 
 ├── Dockerfile # Builds the CoreDNS + Python container
 
 ├── Corefile # CoreDNS configuration
 
-├── update_hosts.py # Watches Docker events and updates hosts file
+├── scripts/update_hosts.py # Watches Docker events and updates hosts file
 
 └── docker-compose.yml # Example compose setup
 
@@ -50,21 +51,22 @@ docker-coredns-dynamic/
 
 Environment variables:
 
-| Variable | Description | Example |
-|-----------|--------------|----------|
-| `DOMAIN`  | Default DNS suffix for containers | `docker.local` |
-| `NETWORK_PREFIX`  | Comma-separated list of Docker network name prefixes to include | `macvlan, bridge` |
+| Variable | Default | Description | Example |
+|-----------|---------|--------------|----------|
+| `DOMAIN`  | `docker.local` | DNS suffix for containers | `docker.local` |
+| `NETWORK_PREFIX`  | `macvlan` | Comma-separated list of Docker network name prefixes to include | `macvlan, bridge` |
+| `FALLBACK_IP`  | `0.0.0.0` | Placeholder IP used for a matched container that has no address yet (e.g. it's stopped) | `0.0.0.0` |
 
 ---
 
 ## 🚀 How It Works
 
-1. On startup, the Python script scans all Docker containers.  
-2. For each container connected to a `macvlan*,bride*` network, it writes an entry to `/etc/coredns/hosts`
+1. On startup, the Python script scans all Docker containers (running and stopped).  
+2. For each container connected to a network matching one of the configured `NETWORK_PREFIX` values (e.g. `macvlan*`, `bridge*`), it writes an entry to `/etc/coredns/hosts`. Containers with no matching network are skipped entirely — no entry, no resolution.
 3. CoreDNS reads this file using the `hosts` plugin and automatically serves both:
 - Forward lookup: `container.docker.local → 192.168.10.100`
 - Reverse lookup: `192.168.10.100 → container.docker.local`
-4. The script subscribes to Docker events (`start`, `die`, `connect`, etc.) and automatically updates the hosts file whenever containers change.
+4. The script subscribes to Docker events (`start`, `die`, `destroy`, `connect`, `disconnect`) and rewrites the hosts file whenever containers change; CoreDNS itself reloads that file every 2 seconds (see `Corefile`), so propagation is near-instant but not synchronous.
 
 ---
 
