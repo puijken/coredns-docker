@@ -5,6 +5,13 @@ on:
     branches:
       - main
   workflow_dispatch:
+  # Builds are otherwise on-demand. This monthly run matters most in this repo: both base images
+  # are floating tags (`coredns/coredns:latest` and `python:3.14-slim`), and Dependabot cannot
+  # track `latest` at all, so without this nothing would ever trigger a rebuild for an upstream
+  # security fix. No `no-cache` is needed -- there is no layer cache configured and `pull: true`
+  # below re-resolves the tags against the registry, so every build is already fully fresh.
+  schedule:
+    - cron: '0 1 1 * *'  # 01:00 UTC on the 1st of each month
 
 jobs:
   build:
