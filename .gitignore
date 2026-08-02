@@ -1,0 +1,4 @@
+# Local, unpublished notes. This repo is public: deployment status, real
+# device/host names and site-specific addresses belong in a *.local.md file,
+# not in the tracked docs.
+*.local.md
