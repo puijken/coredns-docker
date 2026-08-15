@@ -10,7 +10,7 @@ It dynamically maps container hostnames and IP addresses into CoreDNS, supports 
 ✅ **Automatic DNS Record Management**  
 - Every container attached to a matched network (see `NETWORK_PREFIX` below) gets a fully-qualified domain name (FQDN) automatically added to `/etc/coredns/hosts`.  
 - CoreDNS automatically provides **forward (A)** and **reverse (PTR)** resolution.
-- A matched container that's currently stopped (no IP assigned yet) gets a `FALLBACK_IP` placeholder entry instead of being omitted.
+- A matched container that's currently stopped still resolves to its **statically assigned** address, if it has one. Docker clears the runtime IP when a container stops but keeps the configured one, so an on-demand container resolves correctly *before* anything starts it. Only an attachment with no static address configured falls back to the `FALLBACK_IP` placeholder.
 - Containers with **no** matched network get no entry at all — they don't resolve, rather than resolving to a placeholder.
 
 ✅ **Event-Based Updates**  
@@ -55,7 +55,7 @@ Environment variables:
 |-----------|---------|--------------|----------|
 | `DOMAIN`  | `docker.local` | DNS suffix for containers | `docker.local` |
 | `NETWORK_PREFIX`  | `macvlan` | Comma-separated list of Docker network name prefixes to include | `macvlan, bridge` |
-| `FALLBACK_IP`  | `0.0.0.0` | Placeholder IP used for a matched container that has no address yet (e.g. it's stopped) | `0.0.0.0` |
+| `FALLBACK_IP`  | `0.0.0.0` | Placeholder IP for a matched container with **no** address at all — neither running nor statically assigned. A stopped container with a static IP uses that instead. | `0.0.0.0` |
 
 ---
 
