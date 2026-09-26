@@ -2,3 +2,6 @@
 # device/host names and site-specific addresses belong in a *.local.md file,
 # not in the tracked docs.
 *.local.md
+
+# Python bytecode cache
+__pycache__/
