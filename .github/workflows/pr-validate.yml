@@ -12,13 +12,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # Runs before the build: a records regression is invisible to `docker build`, which
-      # succeeds just as happily while update_hosts.py publishes the wrong addresses.
-      - name: Run smoke test
-        run: python3 smoke_test.py
+      # Required for `load: true` to export the built image into the local docker daemon.
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v4
 
+      # load: true puts the image into the local daemon so the smoke test can run it.
       - name: Build Docker image (no push)
         uses: docker/build-push-action@v7
         with:
           context: .
           push: false
+          load: true
+          tags: coredns-docker:pr
+
+      # Building proves nothing about runtime: the image builds just as happily while
+      # update_hosts.py publishes the wrong addresses, or the docker SDK / CoreDNS binary pulled in
+      # by a floating tag no longer works. smoke_test.py runs the address logic on the image's own
+      # Python; smoke_test_live.py serves real DNS from the image against the real daemon.
+      - name: Smoke test
+        run: |
+          docker run --rm -v "$PWD/smoke_test.py:/smoke_test.py:ro" coredns-docker:pr python3 /smoke_test.py
+          python3 smoke_test_live.py coredns-docker:pr

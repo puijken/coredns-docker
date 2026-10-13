@@ -43,6 +43,10 @@ coredns-docker/
 
 ├── scripts/update_hosts.py # Watches Docker events and updates hosts file
 
+├── smoke_test.py # Address-selection logic against a fake Docker client
+
+├── smoke_test_live.py # The built image serving real DNS against a real Docker daemon
+
 └── docker-compose.yml # Example compose setup
 
 ---
@@ -80,3 +84,28 @@ Reverse lookup:
 ```bash
 dig -x 192.168.10.100 @192.168.10.10
 ```
+
+---
+
+## 🧪 Tests
+
+Two smoke tests, both stdlib-only:
+
+- `smoke_test.py` runs `update_hosts.py`'s address selection against a fake Docker client:
+  runtime address, the static-address fallback for stopped containers, `FALLBACK_IP`, the network
+  prefix filter and the hosts-file line format.
+- `smoke_test_live.py IMAGE` runs the built image against a real Docker daemon on a throwaway
+  network and queries it over DNS: A and PTR records for a container that existed at startup, a
+  record for one started later (the event listener), and a stopped container still resolving to
+  its static address. It creates `cdsmoke-*` containers and network, uses the subnet
+  `172.31.254.0/24`, and removes them afterwards.
+
+```bash
+docker build -t coredns-docker:dev .
+docker run --rm -v "$PWD/smoke_test.py:/smoke_test.py:ro" coredns-docker:dev python3 /smoke_test.py
+python3 smoke_test_live.py coredns-docker:dev
+```
+
+Both workflows run them: `pr-validate.yml` on pull requests, and `build.yml` **before** pushing the
+image, so a change that breaks the records at runtime never reaches `:latest`. Building alone proves
+nothing here, and `coredns/coredns:latest` is a floating tag that can change with no pull request.
