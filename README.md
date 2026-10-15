@@ -35,7 +35,7 @@ It dynamically maps container hostnames and IP addresses into CoreDNS, supports 
 ---
 
 ## 🗂️ Project Structure
-coredns-docker/
+docker-coredns/
 
 ├── Dockerfile # Builds the CoreDNS + Python container
 
@@ -101,9 +101,9 @@ Two smoke tests, both stdlib-only:
   `172.31.254.0/24`, and removes them afterwards.
 
 ```bash
-docker build -t coredns-docker:dev .
-docker run --rm -v "$PWD/smoke_test.py:/smoke_test.py:ro" coredns-docker:dev python3 /smoke_test.py
-python3 smoke_test_live.py coredns-docker:dev
+docker build -t docker-coredns:dev .
+docker run --rm -v "$PWD/smoke_test.py:/smoke_test.py:ro" docker-coredns:dev python3 /smoke_test.py
+python3 smoke_test_live.py docker-coredns:dev
 ```
 
 Both workflows run them: `pr-validate.yml` on pull requests, and `build.yml` **before** pushing the

@@ -23,7 +23,7 @@ jobs:
           context: .
           push: false
           load: true
-          tags: coredns-docker:pr
+          tags: docker-coredns:pr
 
       # Building proves nothing about runtime: the image builds just as happily while
       # update_hosts.py publishes the wrong addresses, or the docker SDK / CoreDNS binary pulled in
@@ -31,5 +31,5 @@ jobs:
       # Python; smoke_test_live.py serves real DNS from the image against the real daemon.
       - name: Smoke test
         run: |
-          docker run --rm -v "$PWD/smoke_test.py:/smoke_test.py:ro" coredns-docker:pr python3 /smoke_test.py
-          python3 smoke_test_live.py coredns-docker:pr
+          docker run --rm -v "$PWD/smoke_test.py:/smoke_test.py:ro" docker-coredns:pr python3 /smoke_test.py
+          python3 smoke_test_live.py docker-coredns:pr

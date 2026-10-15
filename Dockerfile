@@ -6,7 +6,7 @@ FROM python:3.14-slim
 
 LABEL maintainer="puijken"
 LABEL description="CoreDNS with dynamic Docker discovery (A + PTR records)"
-LABEL org.opencontainers.image.source="https://github.com/puijken/coredns-docker"
+LABEL org.opencontainers.image.source="https://github.com/puijken/docker-coredns"
 
 COPY --from=coredns /coredns /usr/local/bin/coredns
 COPY Corefile /Corefile

@@ -1,6 +1,6 @@
 services:
   coredns-dynamic:
-    image: ghcr.io/puijken/coredns-docker:latest
+    image: ghcr.io/puijken/docker-coredns:latest
     container_name: coredns-dynamic
     hostname: coredns
     restart: always
