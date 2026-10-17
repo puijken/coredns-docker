@@ -28,7 +28,7 @@ class FakeContainers:
     def __init__(self, containers):
         self._containers = containers
 
-    def list(self, all=False):  # noqa: A002 -- matches docker-py's signature
+    def list(self, all=False, ignore_removed=False):  # noqa: A002 -- matches docker-py's signature
         return self._containers
 
 

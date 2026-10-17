@@ -4,5 +4,9 @@
         fallthrough
     }
     log
-    errors
+    errors {
+        # Reverse lookups for addresses that aren't containers fall through to nothing and fail;
+        # report those once per 5 minutes instead of one line per query.
+        consolidate 5m ".* no next plugin found$"
+    }
 }

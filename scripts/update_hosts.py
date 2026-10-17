@@ -46,8 +46,9 @@ def resolve_ip(net_info):
 # Generate hosts file
 # -------------------------
 def generate_hosts():
-    # Include all containers, even stopped ones
-    containers = client.containers.list(all=True)
+    # Include all containers, even stopped ones. ignore_removed: a container destroyed between the
+    # list and its inspect is skipped instead of failing the whole update with "No such container".
+    containers = client.containers.list(all=True, ignore_removed=True)
     lines = []
 
     for c in containers:
@@ -73,13 +74,21 @@ def generate_hosts():
 # -------------------------
 # Event listener
 # -------------------------
+# Events that can change an address. Matched exactly: a substring match also caught
+# "exec_start: <cmd>" and "exec_die", so every healthcheck rewrote the hosts file (and logged the
+# command line). Network attach/detach arrive as Type "network", not "container".
+RELEVANT_EVENTS = {
+    "container": {"start", "die", "destroy"},
+    "network": {"connect", "disconnect"},
+}
+
+
 def event_listener():
-    for event in client.events(decode=True):
+    for event in client.events(decode=True, filters={"type": list(RELEVANT_EVENTS)}):
+        kind = event.get("Type", "")
         action = event.get("Action", "")
-        if event.get("Type") == "container" and any(
-            x in action for x in ["start", "die", "destroy", "connect", "disconnect"]
-        ):
-            print(f"🔁 Docker event: {action} - updating hosts file...")
+        if action in RELEVANT_EVENTS.get(kind, ()):
+            print(f"🔁 Docker event: {kind} {action} - updating hosts file...")
             try:
                 generate_hosts()
             except Exception as e:

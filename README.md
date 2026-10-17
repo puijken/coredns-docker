@@ -70,7 +70,7 @@ Environment variables:
 3. CoreDNS reads this file using the `hosts` plugin and automatically serves both:
 - Forward lookup: `container.docker.local → 192.168.10.100`
 - Reverse lookup: `192.168.10.100 → container.docker.local`
-4. The script subscribes to Docker events (`start`, `die`, `destroy`, `connect`, `disconnect`) and rewrites the hosts file whenever containers change; CoreDNS itself reloads that file every 2 seconds (see `Corefile`), so propagation is near-instant but not synchronous.
+4. The script subscribes to Docker events (container `start`, `die`, `destroy`; network `connect`, `disconnect`) and rewrites the hosts file whenever containers change. Other events, such as healthcheck `exec_*` events, are ignored. CoreDNS itself reloads that file every 2 seconds (see `Corefile`), so propagation is near-instant but not synchronous.
 
 ---
 
